@@ -3,10 +3,17 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.actions.ScaleToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Align;
@@ -23,18 +30,19 @@ public class UI extends ApplicationAdapter {
     private Table leftTable, addCardsButtonTable, addCardsItemsTable;
     private ImageButton rightButton, wrongButton, showSolutionButton;
     private TextButton addCardsButton, readMeButton, addQuestionButton, addAnswerButton, closeAddCardsButton, readMeButtonMenu;
-    private Image question, answer;
+    private Image question, answer, wrongRectangle, rightRectangle;
     private ArrayList<Texture> questionsTextures = new ArrayList<>();
     private ArrayList<Texture> answersTextures = new ArrayList<>();
     private SpriteDrawable rightSprite, rightSpritePushed, wrongSprite, wrongSpritePushed, solutionSprite, solutionSpritePushed;
     private Image uiBackground;
     private Label readMeLabel;
     private ScrollPane questionScrollPane, answerScrollPane;
-    public static List questionList, answerList;
+    public static TextArea questionTextArea, answerTextArea, activeQuestionTextArea;
     private String readMe;
     static int rngIndex;
     private Window readMeWindow, addCardsWindow;
     static String relativePath;
+    public static int right, wrong;
 
     static {
         if (new File("./assets").exists()) {
@@ -43,8 +51,6 @@ public class UI extends ApplicationAdapter {
             relativePath = "./core/assets/";
         }
     }
-
-
 
     @Override
     public void create() {
@@ -82,22 +88,24 @@ public class UI extends ApplicationAdapter {
         //leftTable
         leftTable = new Table();
         leftTable.setWidth(stage.getWidth()/8);
-        leftTable.align(Align.center | Align.top);
-        leftTable.setPosition(0, Gdx.graphics.getHeight());
-        leftTable.pad(20);
+        leftTable.setHeight((stage.getHeight()));
+        leftTable.align(Align.topLeft);
+        leftTable.setPosition(0, 0);
+        leftTable.setFillParent(true);
+        leftTable.defaults().pad(10f);
 
-        // *** ADD CARDS TABLES AND WINDOW***
+        // *** ADD CARDS TABLES WINDOW ***
         addCardsButtonTable = new Table();
         addCardsButtonTable.setWidth(stage.getWidth()/8);
-        addCardsButtonTable.align(Align.top);
+        addCardsButtonTable.align(Align.topLeft);
         addCardsButtonTable.setPosition(0,0);
-        addCardsButtonTable.padTop(50f);
+        addCardsButtonTable.padTop(50f).defaults().space(4);
 
         addCardsItemsTable = new Table();
         addCardsItemsTable.setWidth(stage.getWidth()/8);
-        addCardsItemsTable.align(Align.top);
+        addCardsItemsTable.align(Align.topLeft);
         addCardsItemsTable.setPosition(0,0);
-        addCardsItemsTable.padTop(50f);
+        addCardsItemsTable.padTop(50f).defaults().space(4);
 
         addCardsWindow = new Window("Add cards", skin);
         addCardsWindow.setBounds(Gdx.graphics.getWidth()/6f, 0,
@@ -151,6 +159,8 @@ public class UI extends ApplicationAdapter {
                 rightButton.setVisible(false);
                 wrongButton.setVisible(false);
                 showNextQuestion();
+                right++;
+                updateStatistics();
             }
         });
 
@@ -163,6 +173,8 @@ public class UI extends ApplicationAdapter {
                 rightButton.setVisible(false);
                 wrongButton.setVisible(false);
                 showNextQuestion();
+                wrong++;
+                updateStatistics();
             }
         });
 
@@ -237,23 +249,39 @@ public class UI extends ApplicationAdapter {
         addCardsButtonTable.add(closeAddCardsButton);
 
 
+        // *** TEXTAREAS ***
+        questionTextArea = new TextArea("", skin);
+        Backend.generateQuestionTextArea();
 
+        answerTextArea = new TextArea("", skin);
+        Backend.generateAnswerTextArea();
 
-        // *** LISTS ***
-        questionList = new List<String>(skin);
-        Backend.generateQuestionList();
-
-        answerList = new List<String>(skin);
-        Backend.generateAnswerList();
-
+        activeQuestionTextArea = new TextArea("", skin);
+        Backend.generateActiveQuestionList();
 
         // *** SCROLLPANES ***
-        questionScrollPane = new ScrollPane(questionList);
+        questionScrollPane = new ScrollPane(questionTextArea);
+        addCardsItemsTable.row().height(700f);
         addCardsItemsTable.add(questionScrollPane).pad(50);
 
-        answerScrollPane = new ScrollPane(answerList);
+        answerScrollPane = new ScrollPane(answerTextArea);
         addCardsItemsTable.add(answerScrollPane).pad(50);
 
+        // *** STATISTICS ***
+
+        leftTable.row().height(350f).width(100f);
+        leftTable.add(activeQuestionTextArea).padTop(50f).padLeft(10);
+
+        rightRectangle = new Image(new Texture(relativePath + "rectangle.png"));
+        rightRectangle.setColor(Color.GREEN);
+        rightRectangle.setScale(1,0);
+        leftTable.row();
+        leftTable.add(rightRectangle);
+
+        wrongRectangle = new Image(new Texture(relativePath + "rectangle.png"));
+        wrongRectangle.setColor(Color.RED);
+        wrongRectangle.setScale(1,0);
+        leftTable.add(wrongRectangle);
 
         showNextQuestion();
 
@@ -280,6 +308,30 @@ public class UI extends ApplicationAdapter {
         }
         for (Texture t : answersTextures){
             t.dispose();
+        }
+    }
+
+    static public void resetStatistics(){
+        right = 0;
+        wrong = 0;
+    }
+
+    private void updateStatistics(){
+        float rightPercent = ((float)right) / (right+wrong);
+        float wrongPercent = ((float)wrong) / (right+wrong);
+        ScaleToAction rightScale = new ScaleToAction();
+        rightScale.setScale(1, rightPercent * -5);
+        rightScale.setDuration(1f);
+        rightRectangle.addAction(rightScale);
+
+        ScaleToAction wrongScale = new ScaleToAction();
+        wrongScale.setScale(1, wrongPercent * -5);
+        wrongScale.setDuration(1f);
+        wrongRectangle.addAction(wrongScale);
+        if (right == answersTextures.size()){
+            resetStatistics();
+            rightScale.setScale(1, 0);
+            wrongScale.setScale(1, 0);
         }
     }
 
@@ -329,8 +381,9 @@ public class UI extends ApplicationAdapter {
         answer.setPosition(((Gdx.graphics.getWidth() + Gdx.graphics.getWidth() / 8f)/2f) - (answersTextures.get(rngIndex).getWidth()/2f),
                 Gdx.graphics.getHeight() * 0.05f);
         answer.setVisible(false);
-        Backend.generateQuestionList();
-        Backend.generateAnswerList();
+        Backend.generateQuestionTextArea();
+        Backend.generateAnswerTextArea();
+        Backend.generateActiveQuestionList();
         stage.addActor(answer);
     }
 }

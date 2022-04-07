@@ -28,8 +28,9 @@ public class Backend{
 		questionsFileStrings = scanFolder("questions");
 		answersFileStrings = scanFolder("answers");
 		initializeWrongIndexList();
-		generateQuestionList();
-		generateAnswerList();
+		generateQuestionTextArea();
+		generateAnswerTextArea();
+		UI.resetStatistics();
 	}
 
 	static public void initializeWrongIndexList(){
@@ -42,7 +43,7 @@ public class Backend{
 	}
 
 	static public int generateRandomIndexFromWrong(){
-		if (wrongIndexList.size() != questionsFileStrings.size()){
+		if (wrongIndexList.size() == 0){
 			initializeWrongIndexList();
 		}
 		int k = new Random().nextInt((wrongIndexList.size()));
@@ -55,35 +56,36 @@ public class Backend{
 	}
 
 
-	static public void generateActiveQuestionList(){ //TODO
-		/*
-		questionListLabel.clear();
-		StringBuilder output = new StringBuilder();
+	static public void generateActiveQuestionList(){
+		activeQuestionTextArea.clear();
+		StringBuilder activeQuestions = new StringBuilder();
 		for (int j = 0 ; j < questionsFileStrings.size() ; j++){
 			if (wrongIndexList.contains(j)) {
-				output.append(questionsFileStrings.get(j), 0, questionsFileStrings.get(j).length() - 4);
-				output.append("\r\n");
+				activeQuestions.append(questionsFileStrings.get(j), 0, questionsFileStrings.get(j).length() - 4);
+				activeQuestions.append("\n");
 			}
 		}
-*/
+		activeQuestionTextArea.setText(activeQuestions.toString());
 	}
 
-	static public void generateQuestionList(){
-		String[] questions = new String[questionsFileStrings.size()];
-		for (int j = 0 ; j < questionsFileStrings.size() ; j++){
-			questions[j] = questionsFileStrings.get(j).substring(0, questionsFileStrings.get(j).length() - 4);
+	static public void generateQuestionTextArea(){
+		questionTextArea.clear();
+		StringBuilder questions = new StringBuilder();
+		for (String questionsFileString : questionsFileStrings) {
+			questions.append(questionsFileString, 0, questionsFileString.length() - 4);
+			questions.append("\n");
 		}
-		UI.questionList.clear();
-		UI.questionList.setItems(questions);
+		questionTextArea.setText(questions.toString());
 	}
 
-	static public void generateAnswerList(){
-		String[] answers = new String[answersFileStrings.size()];
-		for (int j = 0 ; j < answersFileStrings.size() ; j++){
-			answers[j] = answersFileStrings.get(j).substring(0, answersFileStrings.get(j).length() - 4);
+	static public void generateAnswerTextArea(){
+		answerTextArea.clear();
+		StringBuilder answers = new StringBuilder();
+		for (String answersFileString : answersFileStrings) {
+			answers.append(answersFileString, 0, answersFileString.length() - 4);
+			answers.append("\n");
 		}
-		UI.answerList.clear();
-		UI.answerList.setItems(answers);
+		answerTextArea.setText(answers.toString());
 	}
 
 	static public ArrayList<String> scanFolder(String folderName) {
