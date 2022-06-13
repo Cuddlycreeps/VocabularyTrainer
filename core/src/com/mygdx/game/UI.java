@@ -19,7 +19,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-
 import java.io.File;
 import java.util.ArrayList;
 
@@ -50,6 +49,7 @@ public class UI extends ApplicationAdapter {
         } else {
             relativePath = "./core/assets/";
         }
+        //relativePath = "./assets/";
     }
 
     @Override
@@ -155,7 +155,7 @@ public class UI extends ApplicationAdapter {
         rightButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Backend.wrongIndexList.remove(rngIndex);
+                Backend.wrongIndexList.remove((Integer) rngIndex);
                 rightButton.setVisible(false);
                 wrongButton.setVisible(false);
                 showNextQuestion();

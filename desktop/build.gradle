@@ -1,4 +1,5 @@
 plugins { id 'org.beryx.runtime' version '1.8.4' }
+sourceCompatibility = 1.8
 sourceSets.main.java.srcDirs = [ "src/" ]
 sourceSets.main.resources.srcDirs = ["../core/assets"]
 
@@ -56,7 +57,7 @@ runtime {
     distDir = file(buildDir)
 
     jpackage {
-        //jpackageHome = '/usr/lib/jvm/open-jdk'
+        //jpackageHome = 'C:/Program Files/AdoptOpenJDK/jdk-14.0.2.12-hotspot'
         mainJar = dist.archiveFileName.get()
         if (osName.contains('windows')) {
             imageOptions = ["--icon", file("../icons/icon.ico")]

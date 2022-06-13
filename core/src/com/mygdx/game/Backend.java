@@ -51,7 +51,7 @@ public class Backend{
 			return generateRandomIndexFromWrong();
 		}
 		else{
-			return k;
+			return wrongIndexList.get(k);
 		}
 	}
 
